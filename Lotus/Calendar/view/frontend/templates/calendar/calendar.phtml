@@ -4,13 +4,14 @@
  */
 $events = $block->getEvents();
 $currentStoreTime = $block->getCurrentStoreTime();
-$types = $block->getTypes();
+$types = json_encode($block->getTypes());
+$calendarHeight = $block->getCalendarHeight();
 ?>
 
 <div id="lotus-calendar" class="lotus-calendar">
     <lotus-calendar-select></lotus-calendar-select>
     <v-app id="inspire">
-        <v-sheet height="1000">
+        <v-sheet height="<?= $calendarHeight ?>">
             <v-calendar
                 v-bind="options"
                 ref="calendar"
@@ -118,10 +119,8 @@ $types = $block->getTypes();
                     return month + ' ' + year
                 },
                 prevMonth() {
-                    if (this.month > 0) {
-                        EventBus.$emit('prev-month')
-                        this.month--
-                    }
+                    EventBus.$emit('prev-month')
+                    this.month--
                 },
                 nextMonth() {
                     EventBus.$emit('next-month')
@@ -131,8 +130,7 @@ $types = $block->getTypes();
             template: `
                 <div class="lotus-calendar-select">
                     <div 
-                        class="circle-icon" 
-                        :class="{ 'disabled-icon': month <= 0 }"
+                        class="circle-icon"
                         @click="prevMonth">
                         <span><i class="fas fa-chevron-left"></i></span>
                     </div>

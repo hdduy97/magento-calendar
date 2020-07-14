@@ -32,29 +32,37 @@ class Calendar extends \Magento\Framework\View\Element\Template
     {
         $result = [];
 
+        $colors = $this->getColors();
+
+        $type1 = 1;
+        $type2 = 2;
+
+        $option1 = [
+            ['label' => 'Option 1', 'value' => 'Value 1'],
+            ['label' => 'Option 2', 'value' => 'Value 2']
+        ];
+        $option2 = [
+            ['label' => 'Option 1', 'value' => 'Value 1'],
+            ['label' => 'Option 2', 'value' => 'Value 2'],
+            ['label' => 'Option 3', 'value' => 'Value 3']
+        ];
+
         $result[] = [
             'name' => 'Event 1',
-            'date' => '2020-07-25', // YYYY-mm-dd
+            'date' => date_format(new DateTime(), 'Y-m-d'), // YYYY-mm-dd
             'startTime' => '15:00:00',
-            'color' => '#2196f3',
-            'type' => '1',
-            'options' => [
-                ['label' => 'Option 1', 'value' => 'Value 1'],
-                ['label' => 'Option 2', 'value' => 'Value 2']
-            ]
+            'color' => $colors[$type1],
+            'type' => $type1,
+            'options' => $option1
         ];
 
         $result[] = [
             'name' => 'Event 2',
-            'date' => '2020-07-25', // YYYY-mm-dd
+            'date' => date_format(new DateTime(), 'Y-m-d'), // YYYY-mm-dd
             'startTime' => '14:00:00',
-            'color' => '#4caf50',
-            'type' => '2',
-            'options' => [
-                ['label' => 'Option 1', 'value' => 'Value 1'],
-                ['label' => 'Option 2', 'value' => 'Value 2'],
-                ['label' => 'Option 3', 'value' => 'Value 3']
-            ]
+            'color' => $colors[$type2],
+            'type' => $type2,
+            'options' => $option2
         ];
 
         return json_encode($result);
@@ -76,11 +84,37 @@ class Calendar extends \Magento\Framework\View\Element\Template
     public function getTypes()
     {
         $result = [
-            [ 'label' => 'All', 'value' => 0],
-            [ 'label' => 'Type 1', 'value' => 1],
-            [ 'label' => 'Type 2', 'value' => 2]
+            ['label' => 'All', 'value' => 0, 'color' => '#ff9800'],
+            ['label' => 'Type 1', 'value' => 1, 'color' => '#2196f3'],
+            ['label' => 'Type 2', 'value' => 2, 'color' => '#4caf50']
         ];
 
-        return json_encode($result);
+        return $result;
+    }
+
+    /**
+     *
+     */
+    public function getColors()
+    {
+        $result = [];
+
+        $types = $this->getTypes();
+
+        foreach($types as $type) {
+            $key = $type['value'];
+            $value = $type['color'];
+            $result[$key] = $value;
+        }
+
+        return $result;
+    }
+
+    /**
+     *
+     */
+    public function getCalendarHeight()
+    {
+        return 1000;
     }
 }
