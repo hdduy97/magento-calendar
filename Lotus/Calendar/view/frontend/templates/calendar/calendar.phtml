@@ -1,0 +1,265 @@
+<?php
+/**
+ * @var \Lotus\Calendar\Block\Calendar\Calendar $block
+ */
+$events = $block->getEvents();
+$currentStoreTime = $block->getCurrentStoreTime();
+$types = $block->getTypes();
+?>
+
+<div id="lotus-calendar" class="lotus-calendar">
+    <lotus-calendar-select></lotus-calendar-select>
+    <v-app id="inspire">
+        <v-sheet height="1000">
+            <v-calendar
+                v-bind="options"
+                ref="calendar"
+                :events="getEvents"
+                :start="selectedMonth"
+                @click:date="viewDay"
+                @click:more="viewDay"
+                @click:event="viewEvent"
+                :event-color="getEventColor"></v-calendar>
+        </v-sheet>
+    </v-app>
+    <lotus-calendar-day></lotus-calendar-day>
+    <lotus-backdrop></lotus-backdrop>
+</div>
+
+<script>
+    require(['vue', 'vuetify', 'jquery'], (Vue, Vuetify, $) => {
+        const events = Object.values(JSON.parse(`<?= $events ?>`))
+        const currentStoreTime = `<?= $currentStoreTime ?>`
+        const types = Object.values(JSON.parse(`<?= $types ?>`))
+
+        const EventBus = new Vue()
+
+        Vue.use(Vuetify)
+
+        Vue.component('lotus-calendar-day', {
+            data() {
+                return {
+                    isCalendarDayShow: false,
+                    info: {}
+                }
+            },
+            computed: {
+                day() {
+                    const monthName = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+                    const [year, month, day] = this.info.date.split('-')
+                    return `${day} ${monthName[month - 1]} ${year}`
+                }
+            },
+            methods: {
+                closeCalendarDay() {
+                    this.isCalendarDayShow = false
+                    EventBus.$emit('close-backdrop')
+                }
+            },
+            mounted() {
+                EventBus.$on('show-calendar-day', data => {
+                    EventBus.$emit('show-backdrop')
+                    this.info = data
+                    this.isCalendarDayShow = true
+                })
+            },
+            template: `
+                <div class="lotus-calendar-day" v-if="isCalendarDayShow">
+                    <div class="lotus-calendar-day-title">
+                        <span class="lotus-calendar-day-title-day">{{ day }}</span>
+                        <span @click="closeCalendarDay" class="lotus-clickable-word">Close</span>
+                    </div>
+                    <div class="lotus-calendar-day-events">
+                        <div 
+                            v-for="event in info.events" 
+                            :style="{ background: event.color }"
+                            class="lotus-calendar-day-events-event">
+                            <div class="lotus-calendar-day-events-event-header" @click="event.expand = !event.expand">
+                                <p>
+                                    <span><i v-show="!event.expand" class="fas fa-chevron-down"></i></span>
+                                    <span><i v-show="event.expand" class="fas fa-chevron-up"></i></span>
+                                </p>
+                                <p class="lotus-calendar-day-events-event-header-title">
+                                    <span>{{ event.name }}</span> 
+                                </p>
+                            </div>
+                            <div v-show="event.expand && event.options.length > 0" class="lotus-calendar-day-events-event-content">
+                                <div v-for="option in event.options">
+                                    <span>{{ option.label }}: {{ option.value }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `
+        })
+
+        Vue.component('lotus-calendar-select', {
+            data() {
+                return {
+                    currentStoreTime,
+                    month: 0,
+                    selectedType: 0,
+                    types
+                }
+            },
+            watch: {
+                selectedType: function(val) {
+                    EventBus.$emit('change-selected-type', val)
+                }
+            },
+            methods: {
+                renderMonth() {
+                    const monthName = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+                    let day = new Date(this.currentStoreTime)
+                    day = new Date(day.setMonth(day.getMonth() + this.month))
+                    const month = monthName[day.getMonth()]
+                    const year = day.getFullYear()
+                    return month + ' ' + year
+                },
+                prevMonth() {
+                    if (this.month > 0) {
+                        EventBus.$emit('prev-month')
+                        this.month--
+                    }
+                },
+                nextMonth() {
+                    EventBus.$emit('next-month')
+                    this.month++
+                }
+            },
+            template: `
+                <div class="lotus-calendar-select">
+                    <div 
+                        class="circle-icon" 
+                        :class="{ 'disabled-icon': month <= 0 }"
+                        @click="prevMonth">
+                        <span><i class="fas fa-chevron-left"></i></span>
+                    </div>
+                    <div class="lotus-calendar-select-month"><span>{{ renderMonth() }}</span></div>
+                    <div class="circle-icon" @click="nextMonth"><span><i class="fas fa-chevron-right"></i></span></div>
+                    <div class="lotus-calendar-select-type">
+                        <select v-model="selectedType">
+                            <option v-for="type in types" :key="type.value" :value="type.value">{{ type.label }}</option>
+                        </select>
+                    </div>
+                </div>
+            `
+        })
+
+        Vue.component('lotus-backdrop', {
+            data() {
+                return {
+                    isBackdropShow: false
+                }
+            },
+            template: `<div v-if="isBackdropShow" class="lotus-backdrop"></div>`,
+            mounted() {
+                EventBus.$on('show-backdrop', () => {
+                    this.isBackdropShow = true 
+                    $('body').addClass('stop-scrolling')
+                    $('body').css('height', '100vh')
+                })
+                EventBus.$on('close-backdrop', () => {
+                    this.isBackdropShow = false
+                    $('body').removeClass('stop-scrolling')
+                    $('body').css('height', '100%')
+                })
+            }
+        })
+
+        new Vue({
+            el: '#lotus-calendar',
+            data: {
+                options: {
+                    type: 'month',
+                    'show-month-on-first': false
+                },
+                events,
+                selectedMonth: new Date(currentStoreTime),
+                selectedType: 0
+            },
+            computed: {
+                getEvents() {
+                    return this.events
+                        .filter(event => {
+                            const month = this.selectedMonth.getMonth()
+                            const year = this.selectedMonth.getFullYear()
+                            const eventMonth = new Date(event.date).getMonth()
+                            const eventYear = new Date(event.date).getFullYear()
+                            return month === eventMonth && year === eventYear
+                        })
+                        .filter(event => this.selectedType === 0 || this.selectedType == event.type)
+                        .map(event => {
+                            let { name, date, endDate, startTime, color, options } = event
+
+                            date = new Date(date)
+                            if (startTime.includes('am') || startTime.includes('pm')) {
+                                startTime = this.timeTo24(startTime)
+                            } else startTime = startTime.match(/\d{2}:\d{2}/)[0]
+                            return {
+                                name: `${startTime} - ${name}`,
+                                start: date,
+                                color,
+                                startTime,
+                                options
+                            }
+                        })
+                        .sort((a,b) => {
+                            return a.startTime >= b.startTime ? 1 : -1
+                    })
+                }
+            },
+            methods: {
+                convertDate(date) {
+                    return new Date(date).toLocaleDateString('en-US')
+                },
+                getEventColor(event) {
+                    return event.color
+                },
+                timeTo24(time) {
+                    const [hour, minute] = time.match(/\d+/g)
+
+                    if (time.includes('pm') && hour != '12') {
+                        return [+hour + 12, minute].join(':')
+                    }
+
+                    return [hour, minute].join(':')
+                },
+                addSlotDuration(startTime, slotDuration) {
+                    const [hour, min] = startTime.split(':')
+                    const plusHour = parseInt((+min + +slotDuration) / 60)
+                    const lastMin = (+min + +slotDuration) % 60
+                    const lastHour = +hour + +plusHour
+                    return `${lastHour}:${lastMin}`
+                },
+                viewDay(date) {
+                    const events = this.getEvents
+                        .map(event => ({
+                            ...event,
+                            expand: false
+                        }))
+                        .filter(event => {
+                            return this.convertDate(event.start) === this.convertDate(date.date)
+                        })
+                    EventBus.$emit('show-calendar-day', {
+                        events,
+                        date: date.date
+                    })
+                },
+                viewEvent(event) {
+                }
+            },
+            mounted() {
+                EventBus.$on('prev-month', () => {
+                    this.selectedMonth = new Date(this.selectedMonth.setMonth(this.selectedMonth.getMonth() - 1))
+                })
+                EventBus.$on('next-month', () => {
+                    this.selectedMonth = new Date(this.selectedMonth.setMonth(this.selectedMonth.getMonth() + 1))
+                })
+                EventBus.$on('change-selected-type', type => this.selectedType = type)
+            },
+            vuetify: new Vuetify()
+        })
+    })
+</script>

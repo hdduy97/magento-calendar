@@ -1,0 +1,19 @@
+{
+    "name": "lotus/module-calendar",
+    "description": "",
+    "version": "1.0.0",
+    "type": "magento2-module",
+    "license": "proprietary",
+    "require": {
+      "magento/framework": "*"
+    },
+    "autoload": {
+      "files": [
+        "registration.php"
+      ],
+      "psr-4": {
+        "Lotus\\Calendar\\": ""
+      }
+    }
+  }
+  

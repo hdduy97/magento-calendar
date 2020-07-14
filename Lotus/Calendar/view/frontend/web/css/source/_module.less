@@ -1,0 +1,131 @@
+.lotus-calendar {
+    button {
+        border: none;
+    }
+    span {
+        font-weight: 400;
+    }
+    div.pl-1 {
+        font-weight: 400;
+        font-size: 12px;
+    }
+    div.v-event-more.pl-1 {
+        font-weight: 700;
+    }
+    .lotus-calendar-select {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
+        position: relative;
+        .lotus-calendar-select-month {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex: 0 0 150px;
+            span{
+                font-weight: 700;
+            }
+        }
+        .circle-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: #ff8272;
+            border-radius: 50%;
+            color: #fff;
+            margin: 0 20px;
+            cursor: pointer;
+        }
+        .circle-icon.disabled-icon {
+            background: #eee;
+            color: #ddd;
+            cursor: auto;
+        }
+        .lotus-calendar-select-type {
+            position: absolute;
+            right: 0;
+            select {
+                border: 1px solid #ccc;
+            }
+        }
+    }
+    .lotus-calendar-day {
+        position: fixed;
+        width: 500px;
+        min-height: 500px;
+        background: #fff;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 100;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        border-radius: 3px;
+        p {
+            padding: 0;
+            margin: 0;
+        }
+        .lotus-calendar-day-title {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            height: 50px;
+            padding: 15px;
+            border-bottom: 1px solid #ccc;
+        }
+        .lotus-clickable-word {
+            position: absolute;
+            right: 20px;
+        }
+        span {
+            &.lotus-calendar-day-title-day {
+                font-size: 17px;
+                font-weight: 700;
+            }
+        }
+        .lotus-calendar-day-events {
+            display: flex;
+            padding: 20px;
+            align-items: center;
+            flex-direction: column;
+            overflow: auto;
+            height: 450px;
+            span {
+                font-weight: 400;
+            }
+            .lotus-calendar-day-events-event {
+                margin-bottom: 10px;
+                cursor: pointer;
+                box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1), 0 0 4px 0 rgba(0, 0, 0, 0.1);
+                border-radius: 3px;
+                width: 80%;
+                color: #fff;
+                .lotus-calendar-day-events-event-header {
+                    padding: 15px;
+                    display: flex;
+                    .lotus-calendar-day-events-event-header-title {
+                        span {
+                            margin-left: 10px;
+                        }
+                    }
+                }
+                .lotus-calendar-day-events-event-content {
+                    padding: 0 15px 15px;
+                }
+            }
+        }
+    }
+    .lotus-backdrop {
+        z-index: 50;
+        position: fixed;
+        width: 100vw;
+        height: 100vh;
+        background: #000;
+        opacity: 50%;
+        top: 0;
+        left: 0;
+    }
+}
