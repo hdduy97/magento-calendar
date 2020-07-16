@@ -17,11 +17,34 @@ $calendarHeight = $block->getCalendarHeight();
                 ref="calendar"
                 :events="getEvents"
                 :start="selectedMonth"
+                @click:event="showEvent"
                 @click:date="viewDay"
                 @click:more="viewDay"
-                @click:event="viewEvent"
                 :event-color="getEventColor"></v-calendar>
         </v-sheet>
+        <v-menu
+            v-model="selectedOpen"
+            :close-on-content-click="false"
+            :activator="selectedElement"
+            offset-x
+        >
+            <v-card
+                color="grey lighten-4"
+                min-width="350px"
+                flat
+            >
+                <v-toolbar
+                    :color="selectedEvent.color"
+                    dark
+                >
+                    <v-toolbar-title style="font-size: 14px; font-weight: 400;" v-html="selectedEvent.name"></v-toolbar-title>
+                    <v-spacer></v-spacer>
+                </v-toolbar>
+                <v-card-text>
+                    <div class="lotus-v-card-text-option" v-for="option in selectedEvent.options" v-html="showEventDetail(option)"></div>
+                </v-card-text>
+            </v-card>
+        </v-menu>
     </v-app>
     <lotus-calendar-day></lotus-calendar-day>
     <lotus-backdrop></lotus-backdrop>
@@ -175,7 +198,10 @@ $calendarHeight = $block->getCalendarHeight();
                 },
                 events,
                 selectedMonth: new Date(currentStoreTime),
-                selectedType: 0
+                selectedType: 0,
+                selectedEvent: {},
+                selectedOpen: false,
+                selectedElement: null
             },
             computed: {
                 getEvents() {
@@ -245,7 +271,24 @@ $calendarHeight = $block->getCalendarHeight();
                         date: date.date
                     })
                 },
-                viewEvent(event) {
+                showEvent ({ nativeEvent, event }) {
+                    const open = () => {
+                        this.selectedEvent = event
+                        this.selectedElement = nativeEvent.target
+                        setTimeout(() => this.selectedOpen = true, 10)
+                    }
+
+                    if (this.selectedOpen) {
+                        this.selectedOpen = false
+                        setTimeout(open, 10)
+                    } else {
+                        open()
+                    }
+
+                    nativeEvent.stopPropagation()
+                },
+                showEventDetail(option) {
+                    return `<span>${option.label}: ${option.value}</span>`
                 }
             },
             mounted() {
